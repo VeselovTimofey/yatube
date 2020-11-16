@@ -1,13 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, get_list_or_404, redirect, render
+from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
+                              render)
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
-
 from .forms import CommentForm, PostForm
-from .models import Group, Post, User, Follow
+from .models import Follow, Group, Post, User
 
 
 @cache_page(1 * 20, key_prefix="index_page")
@@ -79,7 +79,8 @@ def post_view(request, username, post_id):
     return render(
         request,
         "post.html",
-        {"post": post, "author": author, "posts": posts, "comments": comments, "form": form}
+        {"post": post, "author": author, "posts": posts,
+         "comments": comments, "form": form}
     )
 
 
@@ -88,7 +89,8 @@ def post_edit(request, username, post_id):
     is_edit = True
     post = get_object_or_404(Post, pk=post_id)
     author = post.author
-    form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
+    form = PostForm(request.POST or None,
+                    files=request.FILES or None, instance=post)
     if request.user.id == author.id and not form.is_valid():
         return render(
             request,

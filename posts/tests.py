@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Post, Group, Follow, Comment
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -19,7 +19,9 @@ class StaticURLTest(TestCase):
         cls.authorizer_client = Client()
         cls.authorizer_client.force_login(cls.user)
         cls.unauthorized_client = Client()
-        cls.group = Group.objects.create(title='test', description='test', slug='test')
+        cls.group = Group.objects.create(title='test',
+                                         description='test',
+                                         slug='test')
 
     def test_homepage(self):
         response = StaticURLTest.unauthorized_client.get(reverse('index'))
@@ -71,7 +73,9 @@ class StaticURLTest(TestCase):
         self.assertEqual(post, None)
 
     def urls_check(self, text):
-        urls = [reverse('index'), reverse('profile', args=['StasBasov']), reverse('post', args=[self.user, 1])]
+        urls = [reverse('index'),
+                reverse('profile', args=['StasBasov']),
+                reverse('post', args=[self.user, 1])]
         cache.clear()
         for url in urls:
             response_authorized = self.authorizer_client.get(url)
@@ -101,11 +105,13 @@ class StaticURLTest(TestCase):
         self.urls_check(text='TestText')
 
     def test_error_404(self):
-        response = StaticURLTest.unauthorized_client.get('/ajdshfwbaetg12354u32hjkhasg/')
+        response = StaticURLTest.unauthorized_client.get('/ajdshfwbetg123sg/')
         self.assertEqual(response.status_code, 404)
 
     def test_post_image(self):
-        urls = [reverse('index'), reverse('profile', args=['StasBasov']), reverse('post', args=[self.user, 1])]
+        urls = [reverse('index'),
+                reverse('profile', args=['StasBasov']),
+                reverse('post', args=[self.user, 1])]
         img = SimpleUploadedFile(
             name='test.png',
             content=open('media/test_image/test.jpg', 'rb').read(),
@@ -113,7 +119,10 @@ class StaticURLTest(TestCase):
         )
         post = self.authorizer_client.post(
             reverse('new_post'),
-            {'author': self.user, 'group': self.group.pk, 'text': 'Пост с картинкой', 'image': img},
+            {'author': self.user,
+             'group': self.group.pk,
+             'text': 'Пост с картинкой',
+             'image': img},
             follow=True
         )
         cache.clear()
@@ -129,7 +138,10 @@ class StaticURLTest(TestCase):
         )
         self.authorizer_client.post(
             reverse('new_post'),
-            {'author': self.user, 'text': 'Пост с картинкой', 'image': img, 'id': 1},
+            {'author': self.user,
+             'text': 'Пост с картинкой',
+             'image': img,
+             'id': 1},
             follow=True
         )
         try:
@@ -154,25 +166,35 @@ class StaticURLTest(TestCase):
     def test_user_can_subscribe(self):
         self.authorizer_client.force_login(self.user)
         current_following_count = self.user.following.count()
-        response_follow = self.authorizer_client.get(reverse('profile_follow', kwargs={'username': self.user2}))
-        self.assertRedirects(response_follow, reverse('profile',  kwargs={'username': self.user2}))
+        response_follow = self.authorizer_client.get(
+            reverse('profile_follow', kwargs={'username': self.user2})
+        )
+        self.assertRedirects(response_follow, reverse('profile',
+                                                      kwargs={'username': self.user2}))
         self.assertEqual(Follow.objects.count(), current_following_count + 1)
 
     def test_user_can_unsubscribe(self):
         self.authorizer_client.force_login(self.user)
-        self.authorizer_client.get(reverse('profile_follow', kwargs={'username': self.user2}))
+        self.authorizer_client.get(reverse('profile_follow',
+                                           kwargs={'username': self.user2}))
         current_following_count = self.user.following.count()
-        response_unfollow = self.authorizer_client.get(reverse('profile_unfollow', kwargs={'username': self.user2}))
-        self.assertRedirects(response_unfollow, reverse('profile', kwargs={'username': self.user2}))
+        response_unfollow = self.authorizer_client.get(
+            reverse('profile_unfollow', kwargs={'username': self.user2})
+        )
+        self.assertRedirects(response_unfollow,
+                             reverse('profile', kwargs={'username': self.user2}))
         self.assertEqual(Follow.objects.count(), current_following_count)
 
     def test_subscribe_post(self):
-        self.authorizer_client.get(reverse('profile_follow', kwargs={'username': self.user2}))
+        self.authorizer_client.get(reverse('profile_follow',
+                                           kwargs={'username': self.user2}))
         self.authorizer_client.force_login(self.user2)
-        self.authorizer_client.post(reverse('new_post'), {'text': 'Это текст публикации'}, follow=True)
+        self.authorizer_client.post(reverse('new_post'),
+                                    {'text': 'Это текст публикации'}, follow=True)
         post_check = Post.objects.first()
         self.authorizer_client.force_login(self.user)
-        response = self.authorizer_client.get(reverse('follow_index'), follow=True)
+        response = self.authorizer_client.get(reverse('follow_index'),
+                                              follow=True)
         response = response.context['page'][0].text
         self.assertEqual(response, post_check.text)
 
@@ -184,7 +206,10 @@ class StaticURLTest(TestCase):
             follow=True
         )
         post = get_object_or_404(Post, author=self.user)
-        self.unauthorized_client.get(reverse('add_comment', args=[self.user, post.pk]), {'text': 'No'})
+        self.unauthorized_client.get(
+            reverse('add_comment', args=[self.user, post.pk]),
+            {'text': 'No'}
+        )
         try:
             commit = Comment.objects.get(post_id=post.pk)
         except Comment.DoesNotExist:
