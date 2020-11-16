@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Ваши подписки{% endblock %}
+{% block header %}Ваши подписки{% endblock %}
+
+{% block content %}
+<div class="container">
+     {% include "menu.html" with index=True %}
+
+    <header>
+        <h1> Ваши подписки </h1>
+    </header>
+
+    {% include "post_in_page.html" %}
+
+</div>
+{% endblock %}

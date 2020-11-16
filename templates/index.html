@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Последние обновления на сайте{% endblock %}
+{% block header %}Последние обновления на сайте{% endblock %}
+
+{% block content %}
+<div class="container">
+     {% include "menu.html" with index=True %}
+
+    <header>
+        <h1> Последние обновления на сайте</h1>
+    </header>
+
+    {% include "post_in_page.html" %}
+
+</div>
+{% endblock %}

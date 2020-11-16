@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %} Новый пост {% endblock %}
+{% block content %}
+{% load user_filters %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 p-5">
+        {% if is_edit is True %}
+            <div class="card text-center">
+                <div class="card-header" style="background-color: #e3f2fd;">Редактировать пост</div>
+                <div class="card-body">
+        {% else %}
+            <div class="card text-center">
+                <div class="card-header" style="background-color: #e3f2fd;">Создать новый пост</div>
+                <div class="card-body">
+        {% endif %}
+
+                {% for error in form.errors %}
+                  <div class="alert alert-danger" role="alert">
+                      {{ error|escape }}
+                  </div>
+                {% endfor %}
+
+                {% if is_edit is True %}
+                    <form method="Post" action="{% url 'post_edit' username=post.author.username post_id=post.id %}" enctype="multipart/form-data">
+                {% else %}
+                    <form method="Post" action="{% url 'new_post' %}" enctype="multipart/form-data">
+                {% endif %}
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                        <div class="form-group row">
+                                <label class="col-md-2 col-form-label text-left">{{ field.label }}</label>
+                                <div class="col-md-8">
+                                    {{ field|addclass:"form-control" }}
+                                </div>
+                        </div>
+                    {% endfor %}
+
+                    {% if is_edit is True %}
+                        <div class="col-md-4 offset-md-1">
+                            <input type="submit" value="Редактировать">
+                        </div>
+                    {% else %}
+                        <div class="col-md-4 offset-md-1">
+                            <input type="submit" value="Запостить">
+                        </div>
+                    {% endif %}
+                </form>
+
+                </div> <!-- card body -->
+            </div> <!-- card -->
+    </div> <!-- col -->
+</div> <!-- row -->
+{% endblock %}
