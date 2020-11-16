@@ -13,13 +13,6 @@ class PostForm(forms.ModelForm):
                      "text": "Введите текст поста",
                      "image": "Нужно вставить картинку"}
 
-    def empty_text(self):
-        data = self.cleaned_data["text"]
-        if data == "":
-            raise forms.ValidationError("Пост без текста "
-                                        "не будет опубликован.")
-        return data
-
 
 class CommentForm(forms.ModelForm):
     class Meta:
