@@ -10,14 +10,25 @@ from .models import Follow, Group, Post, User
 
 @cache_page(1 * 20, key_prefix="index_page")
 def index(request):
-    post_list = Post.objects.select_related('group').order_by("-pub_date").all()
-
-    paginator = Paginator(post_list, 5)
+    posts_list = Post.objects.select_related('group').order_by("-pub_date").all()
+    paginator = Paginator(posts_list, 5)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
     return render(
         request,
         "index.html",
+        {"page": page, "paginator": paginator}
+    )
+
+
+def groups_index(request):
+    groups_list = Group.objects.all()
+    paginator = Paginator(groups_list, 10)
+    page_number = request.GET.get("page")
+    page = paginator.get_page(page_number)
+    return render(
+        request,
+        "groups_index.html",
         {"page": page, "paginator": paginator}
     )
 
@@ -59,12 +70,13 @@ def profile(request, username):
     paginator = Paginator(posts, 5)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
-    following = author.following.exists()
+    followers = [id[0] for id in author.following.values_list("user")]
     return render(
         request,
         "profile.html",
         {"posts": posts, "author": author,
-         "page": page, "paginator": paginator, "following": following}
+         "page": page, "paginator": paginator,
+         "followers": followers}
     )
 
 
@@ -74,11 +86,12 @@ def post_view(request, username, post_id):
     posts = author.posts.all()
     form = CommentForm()
     comments = post.comments.all()
+    followers = [id[0] for id in author.following.values_list("user")]
     return render(
         request,
         "post.html",
         {"post": post, "author": author, "posts": posts,
-         "comments": comments, "form": form}
+         "comments": comments, "form": form, "followers": followers}
     )
 
 

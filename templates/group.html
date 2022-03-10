@@ -2,12 +2,11 @@
 {% block title %} Записи сообщества {{ group.title }} {% endblock %}
 
 {% block content %}
-<header>
-  <h1>{{ group.title }}</h1>
-</header>
+  <header>
+    <h1>{{ group.title }}</h1>
+  </header>
 
-<p>{{ group.description }}</p>
+  <p>{{ group.description }}</p>
 
-{% include "post_in_page.html" %}
-
+  {% include "post_in_index.html" %}
 {% endblock %}

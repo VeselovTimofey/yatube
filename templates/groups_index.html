@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Группы{% endblock %}
+{% block header %}Группы{% endblock %}
+
+{% block content %}
+<div class="container">
+     {% include "menu.html" with groups=True %}
+
+    <header>
+        <h1> Группы </h1>
+    </header>
+
+    {% for group in page %}
+        <div class="card mb-3 mt-1 shadow-sm">
+            <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+                <h3>
+                    Группа: <a href="{% url 'group_posts' group.slug %}"> {{ group.title }} </a>
+                </h3>
+            </nav>
+            <div style="text-indent: 20px;">
+                <p>{{ group.description }}</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-left">
+                <div class="btn-group">
+                    Количество постов: {{ group.posts_in_group.count }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if page.has_other_pages %}
+        {% include "paginator.html" with items=page paginator=paginator %}
+    {% endif %}
+</div>
+{% endblock %}

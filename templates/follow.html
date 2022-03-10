@@ -4,13 +4,13 @@
 
 {% block content %}
 <div class="container">
-     {% include "menu.html" with index=True %}
+     {% include "menu.html" with follow_index=True %}
 
     <header>
         <h1> Ваши подписки </h1>
     </header>
 
-    {% include "post_in_page.html" %}
+    {% include "post_in_index.html" %}
 
 </div>
 {% endblock %}

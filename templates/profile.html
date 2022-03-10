@@ -14,7 +14,6 @@
                 {% include "post_card.html" %}
             {% endfor %}
 
-            <!-- Здесь постраничная навигация паджинатора -->
             {% if page.has_other_pages %}
                 {% include "paginator.html" with items=page paginator=paginator %}
             {% endif %}

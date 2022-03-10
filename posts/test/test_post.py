@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Comment, Follow, Group, Post
+from posts.models import Group, Post
 
 User = get_user_model()
 
@@ -23,22 +23,6 @@ class StaticURLTest(TestCase):
                                          description='test',
                                          slug='test')
 
-    def test_homepage(self):
-        response = StaticURLTest.unauthorized_client.get(reverse('index'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_force_login(self):
-        response = StaticURLTest.authorizer_client.get(reverse('new_post'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_unauthorized_user_newpage(self):
-        response = StaticURLTest.unauthorized_client.get(reverse('new_post'))
-        self.assertRedirects(
-            response,
-            f'{reverse("login")}?next={reverse("new_post")}',
-            status_code=302, target_status_code=200
-        )
-
     def test_new_post(self):
         response = StaticURLTest.authorizer_client.post(
             reverse('new_post'),
@@ -48,12 +32,6 @@ class StaticURLTest(TestCase):
         post = get_object_or_404(Post, pk=1)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('Это текст публикации' in post.text)
-
-    def test_personal_page(self):
-        response = StaticURLTest.authorizer_client.get(
-            reverse('profile', args=['StasBasov'])
-        )
-        self.assertEqual(response.status_code, 200)
 
     def test_unauthorized_post(self):
         response = StaticURLTest.unauthorized_client.post(
@@ -104,10 +82,6 @@ class StaticURLTest(TestCase):
         )
         self.urls_check(text='TestText')
 
-    def test_error_404(self):
-        response = StaticURLTest.unauthorized_client.get('/ajdshfwbetg123sg/')
-        self.assertEqual(response.status_code, 404)
-
     def test_post_image(self):
         urls = [reverse('index'),
                 reverse('profile', args=['StasBasov']),
@@ -149,69 +123,3 @@ class StaticURLTest(TestCase):
         except Post.DoesNotExist:
             post = None
         self.assertEqual(post, None)
-
-    def test_cache_after_time(self):
-        response_old = self.authorizer_client.get(reverse('index'))
-        StaticURLTest.authorizer_client.post(
-            reverse('new_post'),
-            {'text': 'Это текст публикации'},
-            follow=True
-        )
-        response_new = self.authorizer_client.get(reverse('index'))
-        self.assertEqual(response_old.content, response_new.content)
-        cache.clear()
-        response_newest = self.authorizer_client.get(reverse('index'))
-        self.assertNotEqual(response_old.content, response_newest.content)
-
-    def test_user_can_subscribe(self):
-        self.authorizer_client.force_login(self.user)
-        current_following_count = self.user.following.count()
-        response_follow = self.authorizer_client.get(
-            reverse('profile_follow', kwargs={'username': self.user2})
-        )
-        self.assertRedirects(response_follow, reverse('profile',
-                                                      kwargs={'username': self.user2}))
-        self.assertEqual(Follow.objects.count(), current_following_count + 1)
-
-    def test_user_can_unsubscribe(self):
-        self.authorizer_client.force_login(self.user)
-        self.authorizer_client.get(reverse('profile_follow',
-                                           kwargs={'username': self.user2}))
-        current_following_count = self.user.following.count()
-        response_unfollow = self.authorizer_client.get(
-            reverse('profile_unfollow', kwargs={'username': self.user2})
-        )
-        self.assertRedirects(response_unfollow,
-                             reverse('profile', kwargs={'username': self.user2}))
-        self.assertEqual(Follow.objects.count(), current_following_count)
-
-    def test_subscribe_post(self):
-        self.authorizer_client.get(reverse('profile_follow',
-                                           kwargs={'username': self.user2}))
-        self.authorizer_client.force_login(self.user2)
-        self.authorizer_client.post(reverse('new_post'),
-                                    {'text': 'Это текст публикации'}, follow=True)
-        post_check = Post.objects.first()
-        self.authorizer_client.force_login(self.user)
-        response = self.authorizer_client.get(reverse('follow_index'),
-                                              follow=True)
-        response = response.context['page'][0].text
-        self.assertEqual(response, post_check.text)
-
-    def test_unauthorized_comment(self):
-        self.authorizer_client.force_login(self.user)
-        StaticURLTest.authorizer_client.post(
-            reverse('new_post'),
-            {'text': 'Это текст публикации'},
-            follow=True
-        )
-        post = get_object_or_404(Post, author=self.user)
-        self.unauthorized_client.get(
-            reverse('add_comment', args=[self.user, post.pk]),
-            {'text': 'No'}
-        )
-        try:
-            commit = Comment.objects.get(post_id=post.pk)
-        except Comment.DoesNotExist:
-            commit = None
-        self.assertEqual(commit, None)
