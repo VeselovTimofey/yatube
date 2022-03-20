@@ -8,7 +8,7 @@ from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
 
 
-@cache_page(1 * 20, key_prefix="index_page")
+@cache_page(1 * 5, key_prefix="index_page")
 def index(request):
     posts_list = Post.objects.select_related('group').order_by("-pub_date").all()
     paginator = Paginator(posts_list, 5)

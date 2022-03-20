@@ -1,6 +1,7 @@
 version: "3.8"
 services:
   sqlite3:
+    container_name: sqlite3
     image: nouchka/sqlite3:latest
     stdin_open: true
     tty: true
@@ -9,7 +10,7 @@ services:
 
   yatube:
     container_name: yatube
-    build: .
+    image: vestimofey/yatube:v1.0
     restart: always
     volumes:
       - static_value:/code/static/
@@ -20,6 +21,7 @@ services:
       - sqlite3
 
   nginx:
+    container_name: nginx
     image: nginx:1.21.6
     ports:
       - "80:80"
